@@ -3,7 +3,6 @@ import 'dart:typed_data';
 
 import '../charset/charset.dart';
 import '../mail_conventions.dart';
-import '../private/util/ascii_runes.dart';
 import 'mail_codec.dart';
 
 /// Provides base64 encoder and decoder.
@@ -54,18 +53,12 @@ class Base64MailCodec extends MailCodec {
     if (numberOfRunesAbove7Bit == 0) {
       return text;
     } else {
-      const qpWordHead = '=?utf8?B?';
+      const qpWordHead = '=?utf-8?B?';
       const qpWordTail = '?=';
-      const qpWordDelimiterSize = qpWordHead.length + qpWordTail.length;
       if (fromStart) {
         startIndex = 0;
         endIndex = text.length - 1;
       }
-      // Available space for the current encoded word
-      var qpWordSize = MailConventions.encodedWordMaxLength -
-          qpWordDelimiterSize -
-          startIndex -
-          (nameLength + 2);
       final buffer = StringBuffer();
       if (startIndex > 0) {
         buffer.write(text.substring(0, startIndex));
@@ -73,36 +66,10 @@ class Base64MailCodec extends MailCodec {
       final textToEncode =
           fromStart ? text : text.substring(startIndex, endIndex + 1);
       final encoded = encodeText(textToEncode, wrap: false);
-      buffer.write(qpWordHead);
-      if (encoded.length < qpWordSize) {
-        buffer.write(encoded);
-      } else {
-        // Reuses startIndex for folding
-        startIndex = 0;
-        while (startIndex < encoded.length) {
-          final chunk = startIndex + qpWordSize > encoded.length
-              ? encoded.substring(startIndex)
-              : encoded.substring(startIndex, startIndex + qpWordSize);
-          buffer.write(chunk);
-          startIndex += qpWordSize;
-          if (startIndex < encoded.length) {
-            buffer
-              ..write(qpWordTail)
-              // NOTE Per specification, a CRLF should be inserted here,
-              // but the folding occurs on the rendering function.
-              // Here we leave only the WSP marker
-              // to separate each q-encoded word.
-              // ..writeCharCode(AsciiRunes.runeCarriageReturn)
-              // ..writeCharCode(AsciiRunes.runeLineFeed)
-              // Assumes per default a single leading space for header folding
-              ..writeCharCode(AsciiRunes.runeSpace)
-              ..write(qpWordHead);
-            qpWordSize =
-                MailConventions.encodedWordMaxLength - qpWordDelimiterSize - 1;
-          }
-        }
-      }
-      buffer.write(qpWordTail);
+      buffer
+        ..write(qpWordHead)
+        ..write(encoded)
+        ..write(qpWordTail);
       if (endIndex < text.length - 1) {
         buffer.write(text.substring(endIndex + 1));
       }

@@ -61,7 +61,7 @@ class MailAddress extends OnDemandSerializable {
     final pName = personalName!;
     final buffer = StringBuffer()
       ..write('"')
-      ..write(MailCodec.quotedPrintable.encodeHeader(pName, fromStart: true))
+      ..write(MailCodec.base64.encodeHeader(pName, fromStart: true))
       ..write('" <')
       ..write(email)
       ..write('>');

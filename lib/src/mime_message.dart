@@ -1204,53 +1204,13 @@ class Header {
   /// Renders this header into a the [buffer] wrapping it if necessary.
   void render(StringBuffer buffer) {
     final value = this.value;
-    var length = name.length + ': '.length + (value?.length ?? 0);
     buffer
       ..write(name)
       ..write(': ');
-    if (length < MailConventions.textLineMaxLength) {
-      if (value != null) {
-        buffer.write(value);
-      }
-      buffer.write('\r\n');
-    } else {
-      var currentLineLength = name.length + ': '.length;
-      length -= name.length + ': '.length;
-      final runes = value!.runes.toList();
-      var startIndex = 0;
-      while (length > 0) {
-        var chunkLength = MailConventions.textLineMaxLength - currentLineLength;
-        if (startIndex + chunkLength >= value.length) {
-          // write reminder:
-          buffer
-            ..write(value.substring(startIndex).trim())
-            ..write('\r\n');
-          break;
-        }
-        for (var runeIndex = startIndex + chunkLength;
-            runeIndex > startIndex;
-            runeIndex--) {
-          final rune = runes[runeIndex];
-          if (rune == AsciiRunes.runeSemicolon ||
-              rune == AsciiRunes.runeSpace ||
-              rune == AsciiRunes.runeClosingParentheses ||
-              rune == AsciiRunes.runeClosingBracket ||
-              rune == AsciiRunes.runeGreaterThan) {
-            chunkLength = runeIndex - startIndex + 1;
-            break;
-          }
-        }
-        buffer
-          ..write(value.substring(startIndex, startIndex + chunkLength).trim())
-          ..write('\r\n');
-        length -= chunkLength;
-        startIndex += chunkLength;
-        if (length > 0) {
-          buffer.writeCharCode(AsciiRunes.runeTab);
-          currentLineLength = 1;
-        }
-      }
+    if (value != null) {
+      buffer.write(value);
     }
+    buffer.write('\r\n');
   }
 }
 
