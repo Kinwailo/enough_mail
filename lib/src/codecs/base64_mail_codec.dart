@@ -33,7 +33,7 @@ class Base64MailCodec extends MailCodec {
   /// name of the encoding.
   @override
   String encodeHeader(String text,
-      {int nameLength = 0, bool fromStart = false}) {
+      {int nameLength = 0, bool fromStart = true}) {
     final runes = List.from(text.runes, growable: false);
     var numberOfRunesAbove7Bit = 0;
     var startIndex = -1;
