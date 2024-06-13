@@ -1375,7 +1375,8 @@ class MessageBuilder extends PartBuilder {
       case TransferEncoding.base64:
         return MailCodec.base64.encodeText(text, codec: getCodec(characterSet));
       default:
-        return MailCodec.wrapText(text, wrapAtWordBoundary: true);
+        // return MailCodec.wrapText(text, wrapAtWordBoundary: true);
+        return text;
     }
   }
 
